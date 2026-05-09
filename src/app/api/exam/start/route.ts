@@ -20,8 +20,7 @@ export async function POST() {
 
   const { data: questions, error: qErr } = await supabase
     .from('questions')
-    .select('id')
-    .limit(EXAM_QUESTION_COUNT * 2);
+    .select('id');
 
   if (qErr) return NextResponse.json({ error: qErr.message }, { status: 500 });
 

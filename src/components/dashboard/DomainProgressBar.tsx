@@ -34,7 +34,7 @@ export default function DomainProgressBar({ stats }: DomainProgressBarProps) {
           className="text-xs shrink-0"
           style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
         >
-          {stats.correct}/{stats.total}
+          {stats.practicedCount}/{stats.bankCount} practiced
         </span>
       </div>
       <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>

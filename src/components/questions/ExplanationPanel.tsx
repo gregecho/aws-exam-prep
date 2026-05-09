@@ -3,11 +3,10 @@ interface ExplanationPanelProps {
   correctKeys: string[];
   selectedKeys: string[];
   explanations: Record<string, string | null | undefined>;
+  allOptionKeys: string[];
 }
 
-export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys, explanations }: ExplanationPanelProps) {
-  const allKeys = Array.from(new Set([...selectedKeys, ...correctKeys])).sort();
-
+export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys, explanations, allOptionKeys }: ExplanationPanelProps) {
   return (
     <div
       className="rounded-xl p-4 space-y-4 text-sm"
@@ -20,7 +19,7 @@ export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys,
         {isCorrect ? '✓ Correct' : `✗ Incorrect — correct: ${correctKeys.join(', ')}`}
       </p>
       <div className="space-y-4">
-        {allKeys.map((key) => {
+        {allOptionKeys.map((key) => {
           const isCorrectKey = correctKeys.includes(key);
           const isSelectedKey = selectedKeys.includes(key);
           const explanation = explanations[key];
@@ -41,7 +40,7 @@ export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys,
                   className="text-xs font-medium"
                   style={{ color: isCorrectKey ? 'var(--accent-green)' : 'var(--accent-red)' }}
                 >
-                  {isCorrectKey ? 'Correct' : isSelectedKey ? 'Incorrect' : 'Also incorrect'}
+                  {isCorrectKey ? 'Correct' : isSelectedKey ? 'Incorrect' : 'Incorrect'}
                 </p>
                 <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   {explanation ?? 'No explanation available.'}

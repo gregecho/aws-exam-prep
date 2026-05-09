@@ -131,6 +131,7 @@ export default function QuestionCard({
             correctKeys={correctKeys}
             selectedKeys={selectedKeys}
             explanations={question.explanations}
+            allOptionKeys={question.options.map((o) => o.key)}
           />
         )}
       </div>
@@ -265,6 +266,7 @@ export default function QuestionCard({
             correctKeys={correctKeys}
             selectedKeys={selectedKeys}
             explanations={question.explanations}
+            allOptionKeys={question.options.map((o) => o.key)}
           />
         )}
 

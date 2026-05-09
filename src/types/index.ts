@@ -47,6 +47,8 @@ export interface DomainStats {
   total: number;
   correct: number;
   percentage: number;
+  bankCount: number;
+  practicedCount: number;
 }
 
 export interface QuestionStats {

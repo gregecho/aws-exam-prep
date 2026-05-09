@@ -10,28 +10,41 @@ import Link from "next/link";
 async function getStats(userId: string) {
   const supabase = createServerClient();
 
-  const { data: progress } = await supabase
-    .from("user_progress")
-    .select("is_correct, questions(domain)")
-    .eq("user_id", userId);
-
-  const { data: sessions } = await supabase
-    .from("exam_sessions")
-    .select("score, total, completed_at")
-    .eq("user_id", userId)
-    .not("completed_at", "is", null)
-    .order("completed_at", { ascending: false })
-    .limit(5);
+  const [{ data: progress }, { data: allQuestions }, { data: sessions }] = await Promise.all([
+    supabase
+      .from("user_progress")
+      .select("is_correct, question_id, questions(domain)")
+      .eq("user_id", userId),
+    supabase.from("questions").select("id, domain"),
+    supabase
+      .from("exam_sessions")
+      .select("score, total, completed_at")
+      .eq("user_id", userId)
+      .not("completed_at", "is", null)
+      .order("completed_at", { ascending: false })
+      .limit(5),
+  ]);
 
   const statsMap: Record<string, { total: number; correct: number }> = {};
-  for (const domain of DOMAINS) statsMap[domain] = { total: 0, correct: 0 };
+  const practicedSets: Record<string, Set<string>> = {};
+  for (const domain of DOMAINS) {
+    statsMap[domain] = { total: 0, correct: 0 };
+    practicedSets[domain] = new Set();
+  }
 
   for (const row of progress ?? []) {
     const domain = (row.questions as unknown as { domain: string } | null)?.domain;
     if (domain && statsMap[domain]) {
       statsMap[domain].total++;
       if (row.is_correct) statsMap[domain].correct++;
+      practicedSets[domain].add(row.question_id);
     }
+  }
+
+  const bankCountMap: Record<string, number> = {};
+  for (const domain of DOMAINS) bankCountMap[domain] = 0;
+  for (const q of allQuestions ?? []) {
+    if (bankCountMap[q.domain] !== undefined) bankCountMap[q.domain]++;
   }
 
   const domainStats: DomainStats[] = DOMAINS.map((domain) => ({
@@ -42,6 +55,8 @@ async function getStats(userId: string) {
       statsMap[domain].total > 0
         ? Math.round((statsMap[domain].correct / statsMap[domain].total) * 100)
         : 0,
+    bankCount: bankCountMap[domain],
+    practicedCount: practicedSets[domain].size,
   }));
 
   const totalAnswered = domainStats.reduce((s, d) => s + d.total, 0);

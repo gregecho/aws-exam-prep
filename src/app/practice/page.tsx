@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { DOMAINS, DOMAIN_WEIGHTS } from "@/constants/domains";
+import { createServerClient } from "@/lib/supabase/server";
 
 const DOMAIN_CODES: Record<string, string> = {
   'Design Secure Architectures': 'SEC',
@@ -9,7 +10,16 @@ const DOMAIN_CODES: Record<string, string> = {
   'Design Cost-Optimized Architectures': 'COST',
 };
 
-export default function PracticePage() {
+export default async function PracticePage() {
+  const supabase = createServerClient();
+  const { data: allQuestions } = await supabase.from("questions").select("domain");
+
+  const bankCountMap: Record<string, number> = {};
+  for (const domain of DOMAINS) bankCountMap[domain] = 0;
+  for (const q of allQuestions ?? []) {
+    if (bankCountMap[q.domain] !== undefined) bankCountMap[q.domain]++;
+  }
+
   return (
     <div className="flex flex-col flex-1" style={{ background: 'var(--bg-primary)', color: 'var(--foreground)' }}>
       <Navbar />
@@ -47,6 +57,12 @@ export default function PracticePage() {
                 <p className="text-sm font-medium truncate">{domain}</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
+                <span
+                  className="text-xs"
+                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
+                >
+                  {bankCountMap[domain]} questions
+                </span>
                 <span
                   className="text-xs"
                   style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}

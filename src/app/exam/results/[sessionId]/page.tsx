@@ -53,6 +53,8 @@ export default async function ExamResultsPage({ params }: Props) {
       statsMap[domain].total > 0
         ? Math.round((statsMap[domain].correct / statsMap[domain].total) * 100)
         : 0,
+    bankCount: 0,
+    practicedCount: 0,
   }));
 
   return (

@@ -10,16 +10,21 @@ export async function GET() {
 
   const supabase = createServerClient();
 
-  const { data: progress, error } = await supabase
-    .from('user_progress')
-    .select('is_correct, questions(domain)')
-    .eq('user_id', userId);
+  const [{ data: progress, error }, { data: allQuestions }] = await Promise.all([
+    supabase
+      .from('user_progress')
+      .select('is_correct, question_id, questions(domain)')
+      .eq('user_id', userId),
+    supabase.from('questions').select('id, domain'),
+  ]);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const statsMap: Record<string, { total: number; correct: number }> = {};
+  const practicedSets: Record<string, Set<string>> = {};
   for (const domain of DOMAINS) {
     statsMap[domain] = { total: 0, correct: 0 };
+    practicedSets[domain] = new Set();
   }
 
   for (const row of progress ?? []) {
@@ -27,7 +32,14 @@ export async function GET() {
     if (domain && statsMap[domain]) {
       statsMap[domain].total++;
       if (row.is_correct) statsMap[domain].correct++;
+      practicedSets[domain].add(row.question_id);
     }
+  }
+
+  const bankCountMap: Record<string, number> = {};
+  for (const domain of DOMAINS) bankCountMap[domain] = 0;
+  for (const q of allQuestions ?? []) {
+    if (bankCountMap[q.domain] !== undefined) bankCountMap[q.domain]++;
   }
 
   const stats: DomainStats[] = DOMAINS.map((domain) => ({
@@ -38,6 +50,8 @@ export async function GET() {
       statsMap[domain].total > 0
         ? Math.round((statsMap[domain].correct / statsMap[domain].total) * 100)
         : 0,
+    bankCount: bankCountMap[domain],
+    practicedCount: practicedSets[domain].size,
   }));
 
   const totalAnswered = stats.reduce((s, d) => s + d.total, 0);
