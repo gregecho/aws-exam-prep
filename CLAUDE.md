@@ -28,18 +28,19 @@ Next.js 16 App Router with TypeScript. All routes under `src/app/`. Server compo
 **Question data model**
 - `options_json`: JSONB array `[{"key":"A","text":"..."},...]`
 - `correct`: comma-separated sorted keys, e.g. `'A'` or `'A,C'`
-- `explanations_json`: JSONB map `{"A":"...","B":"..."}`
+- `explanations_json`: JSONB map `{"A":"...","B":"..."}` — answer analysis text per option key
 - `question_type`: `'single'` or `'multiple'`
+- `question_number`: stable integer (1-N by insertion order), used for display (Q1, Q42, etc.)
 - Answer comparison always goes through `normalizeAnswer`/`isAnswerCorrect` in `src/lib/answers.ts` (splits, trims, sorts, rejoins).
 
 **Key components**
-- `QuestionCard` — central question UI. `layout="fullscreen"` for practice mode (top bar + fixed bottom bar); `layout="card"` for exam mode (plain card, no bars).
+- `QuestionCard` — central question UI. `layout="fullscreen"` for practice mode (top bar + fixed bottom bar); `layout="card"` for exam mode (plain card, no bars). Optional `note`/`onNoteChange` props enable the notes textarea in fullscreen mode.
 - `OptionButton` — stateless, four visual states: default / selected / correct / incorrect. `multiSelect` prop switches indicator from circle to rounded square.
-- `ExplanationPanel` — shown after reveal; renders all option keys (not just selected/correct). Requires `allOptionKeys` prop (pass `question.options.map(o => o.key)`).
+- `ExplanationPanel` — shown after reveal; renders per-option explanation text as labeled prose (A. text, B. text…). Correct/selected keys are color-coded; others are muted.
 
 **Routing**
 - `/practice` — async server component; fetches bank counts per domain and displays them alongside domain weight %.
-- `/practice/[domain]` — `PracticeClient`, two-phase: (1) question browser grid showing all questions color-coded by attempt history; (2) fullscreen practice loop starting from the clicked tile. Clicking the last question's Next returns to the browser.
+- `/practice/[domain]` — `PracticeClient`, two-phase: (1) question list browser with filter tabs (All / Not tried / Correct / Partial / Wrong / Bookmarked); (2) fullscreen practice loop starting from the clicked row. Clicking the last question's Next returns to the browser.
 - `/exam/new` — creates session, stores question IDs in `sessionStorage`, redirects to `/exam/[sessionId]`
 - `/exam/[sessionId]` — `ExamClient`, timed exam with sidebar navigator
 - `/exam/results/[sessionId]` — server-rendered score + domain breakdown
@@ -48,11 +49,17 @@ Next.js 16 App Router with TypeScript. All routes under `src/app/`. Server compo
 - Every practice answer is written to `user_progress`.
 - `/api/question-stats` aggregates `times_practiced`, `times_correct`, and `accuracy` on demand (no materialized view).
 - `DomainStats` type includes `bankCount` (total questions in bank for domain) and `practicedCount` (unique questions attempted). Dashboard and `/api/progress` both compute these.
-- Tile color in the practice browser: gray = not tried, green = all correct, teal = partial, red = all wrong.
+- Row status in the practice browser: gray = not tried, green = all correct, teal = partial, red = all wrong.
+
+**Notes**
+- Users can add per-question notes during practice (auto-saved on blur).
+- Stored in `user_notes` table; fetched via `/api/notes` (GET/POST/DELETE).
+- Note indicator (✎) shown in the practice browser list for questions with notes.
 
 **Exam**
 - `EXAM_QUESTION_COUNT = 65` (defined in `src/constants/domains.ts`).
 - `/api/exam/start` fetches all question IDs and shuffles in JS — no limit bias.
+- `/api/questions` supports `id=eq.<uuid>` params (sent by ExamClient) via `.in('id', ids)` filter.
 
 ## Styling
 

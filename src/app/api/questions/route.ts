@@ -10,12 +10,21 @@ export async function GET(request: NextRequest) {
   const domain = searchParams.get('domain');
   const limit = parseInt(searchParams.get('limit') ?? '10', 10);
 
+  // Support id=eq.<uuid> params sent by ExamClient
+  const idParams = searchParams.getAll('id');
+  const ids = idParams.map((v) => v.replace(/^eq\./, '')).filter(Boolean);
+
   const supabase = createServerClient();
   let query = supabase
     .from('questions')
-    .select('id, domain, question, question_type, options_json, correct, explanations_json, created_at')
-    .limit(limit);
-  if (domain) query = query.eq('domain', domain);
+    .select('id, domain, question, question_type, options_json, correct, explanations_json, created_at, question_number');
+
+  if (ids.length) {
+    query = query.in('id', ids).limit(ids.length);
+  } else {
+    if (domain) query = query.eq('domain', domain);
+    query = query.limit(limit);
+  }
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -29,6 +38,7 @@ export async function GET(request: NextRequest) {
     correct: row.correct,
     explanations: row.explanations_json ?? {},
     created_at: row.created_at,
+    question_number: row.question_number,
   }));
 
   return NextResponse.json({ questions });

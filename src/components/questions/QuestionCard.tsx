@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Question, QuestionStats } from '@/types';
 import OptionButton from './OptionButton';
@@ -22,6 +22,8 @@ interface QuestionCardProps {
   onBookmarkToggle?: (questionId: string) => void;
   stats?: QuestionStats;
   score?: number;
+  note?: string;
+  onNoteChange?: (questionId: string, note: string) => void;
 }
 
 export default function QuestionCard({
@@ -38,13 +40,18 @@ export default function QuestionCard({
   onBookmarkToggle,
   stats,
   score = 0,
+  note = '',
+  onNoteChange,
 }: QuestionCardProps) {
   const [localSelected, setLocalSelected] = useState<string[]>([]);
   const [revealed, setRevealed] = useState(false);
+  const [localNote, setLocalNote] = useState(note);
+  const [noteSaved, setNoteSaved] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const isMultiple = question.question_type === 'multiple';
   const correctKeys = getCorrectKeys(question.correct);
+  const displayNumber = question.question_number ?? questionNumber;
 
   const selectedKeys: string[] =
     mode === 'exam'
@@ -82,6 +89,14 @@ export default function QuestionCard({
     onAnswer?.(question.id, normalizeAnswer(localSelected.join(',')));
   }
 
+  const handleNoteBlur = useCallback(() => {
+    if (onNoteChange && localNote !== note) {
+      onNoteChange(question.id, localNote);
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 2000);
+    }
+  }, [onNoteChange, localNote, note, question.id]);
+
   const isFullscreen = layout === 'fullscreen';
   const progress = questionNumber && totalQuestions ? (questionNumber / totalQuestions) * 100 : 0;
 
@@ -93,9 +108,9 @@ export default function QuestionCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            {questionNumber !== undefined && totalQuestions !== undefined && (
+            {displayNumber !== undefined && totalQuestions !== undefined && (
               <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {questionNumber} / {totalQuestions}
+                Q{displayNumber} / {totalQuestions}
               </p>
             )}
             <span
@@ -131,7 +146,6 @@ export default function QuestionCard({
             correctKeys={correctKeys}
             selectedKeys={selectedKeys}
             explanations={question.explanations}
-            allOptionKeys={question.options.map((o) => o.key)}
           />
         )}
       </div>
@@ -143,7 +157,7 @@ export default function QuestionCard({
       className="flex flex-col min-h-screen"
       style={{ background: 'var(--bg-primary)', color: 'var(--foreground)' }}
     >
-      {/* Top bar — replaces navbar in practice mode */}
+      {/* Top bar */}
       <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
         <div className="px-4 pt-3 pb-2 space-y-2">
           <div className="flex items-center justify-between">
@@ -166,14 +180,13 @@ export default function QuestionCard({
                 className="text-xs"
                 style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}
               >
-                {questionNumber} / {totalQuestions}
+                Q{displayNumber} / {totalQuestions}
               </span>
               {onBookmarkToggle && (
                 <BookmarkButton questionId={question.id} isBookmarked={isBookmarked} onToggle={onBookmarkToggle} />
               )}
             </div>
           </div>
-          {/* Progress bar */}
           <div
             className="w-full h-0.5 rounded-full overflow-hidden"
             style={{ background: 'var(--border)' }}
@@ -266,8 +279,32 @@ export default function QuestionCard({
             correctKeys={correctKeys}
             selectedKeys={selectedKeys}
             explanations={question.explanations}
-            allOptionKeys={question.options.map((o) => o.key)}
           />
+        )}
+
+        {/* Notes */}
+        {onNoteChange && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Notes</span>
+              {noteSaved && (
+                <span className="text-xs" style={{ color: 'var(--accent-green)' }}>Saved ✓</span>
+              )}
+            </div>
+            <textarea
+              value={localNote}
+              onChange={(e) => setLocalNote(e.target.value)}
+              onBlur={handleNoteBlur}
+              placeholder="Add a note for this question…"
+              rows={3}
+              className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none transition-colors"
+              style={{
+                background: 'var(--bg-option)',
+                border: '1px solid var(--border)',
+                color: 'var(--foreground)',
+              }}
+            />
+          </div>
         )}
 
         <div className="h-20" />

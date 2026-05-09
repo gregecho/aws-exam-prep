@@ -3,10 +3,11 @@ interface ExplanationPanelProps {
   correctKeys: string[];
   selectedKeys: string[];
   explanations: Record<string, string | null | undefined>;
-  allOptionKeys: string[];
 }
 
-export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys, explanations, allOptionKeys }: ExplanationPanelProps) {
+export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys, explanations }: ExplanationPanelProps) {
+  const allKeys = Object.keys(explanations).sort();
+
   return (
     <div
       className="rounded-xl p-4 space-y-4 text-sm"
@@ -18,34 +19,26 @@ export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys,
       >
         {isCorrect ? '✓ Correct' : `✗ Incorrect — correct: ${correctKeys.join(', ')}`}
       </p>
-      <div className="space-y-4">
-        {allOptionKeys.map((key) => {
+      <div className="space-y-3">
+        {allKeys.map((key) => {
+          const explanation = explanations[key];
+          if (!explanation) return null;
           const isCorrectKey = correctKeys.includes(key);
           const isSelectedKey = selectedKeys.includes(key);
-          const explanation = explanations[key];
           return (
-            <div key={key} className="flex gap-3">
+            <div key={key} className="space-y-0.5">
               <span
-                className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-xs font-bold mt-0.5"
+                className="text-xs font-semibold"
                 style={{
-                  background: isCorrectKey ? 'var(--accent-green)' : 'var(--accent-red)',
-                  color: '#fff',
                   fontFamily: 'var(--font-mono)',
+                  color: isCorrectKey ? 'var(--accent-green)' : isSelectedKey ? 'var(--accent-red)' : 'var(--text-muted)',
                 }}
               >
-                {key}
+                {key}.
               </span>
-              <div className="space-y-1">
-                <p
-                  className="text-xs font-medium"
-                  style={{ color: isCorrectKey ? 'var(--accent-green)' : 'var(--accent-red)' }}
-                >
-                  {isCorrectKey ? 'Correct' : isSelectedKey ? 'Incorrect' : 'Incorrect'}
-                </p>
-                <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {explanation ?? 'No explanation available.'}
-                </p>
-              </div>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {explanation}
+              </p>
             </div>
           );
         })}

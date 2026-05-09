@@ -17,6 +17,7 @@ create table questions (
   correct          text not null check (correct ~ '^[A-Z](,[A-Z])*$'),
   -- explanations_json: {"A":"...","B":"..."}
   explanations_json jsonb not null default '{}'::jsonb,
+  question_number  integer unique,
   created_at       timestamptz default now()
 );
 
@@ -48,8 +49,18 @@ create table user_bookmarks (
   unique (user_id, question_id)
 );
 
+create table user_notes (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     text not null,
+  question_id uuid not null references questions(id) on delete cascade,
+  note        text not null default '',
+  updated_at  timestamptz default now(),
+  unique (user_id, question_id)
+);
+
 create index on user_progress (user_id);
 create index on user_bookmarks (user_id);
+create index on user_notes (user_id);
 create index on exam_sessions (user_id);
 
 -- ================================================================

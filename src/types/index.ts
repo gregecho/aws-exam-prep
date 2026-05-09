@@ -13,6 +13,7 @@ export interface Question {
   correct: string;
   explanations: Record<string, string | null | undefined>;
   created_at: string;
+  question_number: number;
 }
 
 export interface ExamSession {
@@ -49,6 +50,11 @@ export interface DomainStats {
   percentage: number;
   bankCount: number;
   practicedCount: number;
+}
+
+export interface UserNote {
+  question_id: string;
+  note: string;
 }
 
 export interface QuestionStats {
