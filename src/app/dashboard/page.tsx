@@ -62,7 +62,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col flex-1">
       <Navbar />
       <main className="max-w-4xl mx-auto w-full px-4 py-10 space-y-8">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold text-white">
           Dashboard
         </h1>
 
@@ -72,8 +72,8 @@ export default async function DashboardPage() {
           <StatsCard label="Overall accuracy" value={`${overallPct}%`} />
         </div>
 
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
-          <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-xl border border-[#2a2a4a] bg-[#1a1a2e] p-6 space-y-4">
+          <h2 className="font-semibold text-white">
             Progress by domain
           </h2>
           <div className="space-y-4">
@@ -84,21 +84,21 @@ export default async function DashboardPage() {
         </div>
 
         {sessions.length > 0 && (
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3">
-            <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+          <div className="rounded-xl border border-[#2a2a4a] bg-[#1a1a2e] p-6 space-y-3">
+            <h2 className="font-semibold text-white">
               Recent exams
             </h2>
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <div className="divide-y divide-[#2a2a4a]">
               {sessions.map((s, i) => {
                 const pct =
                   s.total > 0 ? Math.round((s.score / s.total) * 100) : 0;
                 return (
                   <div key={i} className="flex justify-between py-2 text-sm">
-                    <span className="text-zinc-600 dark:text-zinc-400">
+                    <span className="text-zinc-400">
                       {new Date(s.completed_at).toLocaleDateString()}
                     </span>
                     <span
-                      className={`font-semibold ${pct >= 72 ? "text-green-600" : "text-red-600"}`}
+                      className={`font-semibold ${pct >= 72 ? "text-green-400" : "text-red-400"}`}
                     >
                       {s.score}/{s.total} ({pct}%)
                     </span>

@@ -7,6 +7,7 @@ interface OptionButtonProps {
   correct?: boolean;
   incorrect?: boolean;
   disabled?: boolean;
+  multiSelect?: boolean;
   onClick: () => void;
 }
 
@@ -17,28 +18,42 @@ export default function OptionButton({
   correct,
   incorrect,
   disabled,
+  multiSelect,
   onClick,
 }: OptionButtonProps) {
-  let className =
-    'w-full flex items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors ';
+  let wrapperClass = 'w-full flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-all ';
+  let indicatorClass = 'shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold border-2 transition-all ';
 
   if (incorrect) {
-    className += 'border-red-400 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950 dark:text-red-100';
+    wrapperClass += 'border-red-500 bg-[#2a0f0f] text-white';
+    indicatorClass += 'border-red-500 bg-red-500 text-white';
   } else if (correct) {
-    className += 'border-green-400 bg-green-50 text-green-900 dark:border-green-600 dark:bg-green-950 dark:text-green-100';
+    wrapperClass += 'border-green-500 bg-[#0f2a1a] text-white';
+    indicatorClass += 'border-green-500 bg-green-500 text-white';
   } else if (selected) {
-    className += 'border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-100';
+    wrapperClass += 'border-sky-400 bg-[#1e2d4a] text-white';
+    indicatorClass += 'border-sky-400 bg-sky-400 text-white';
   } else {
-    className +=
-      'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500';
+    wrapperClass += 'border-[#2a2a4a] bg-[#16213e] text-zinc-300 hover:border-zinc-500 hover:bg-[#1e2a40]';
+    indicatorClass += 'border-[#3a3a5a] bg-transparent text-zinc-400';
   }
 
-  if (disabled) className += ' cursor-default';
+  if (multiSelect) {
+    indicatorClass = indicatorClass.replace('rounded-full', 'rounded-md');
+  }
+
+  if (disabled) wrapperClass += ' cursor-default';
+
+  function renderIndicator() {
+    if (incorrect) return <span>✕</span>;
+    if (correct) return <span>✓</span>;
+    return <span>{optionKey}</span>;
+  }
 
   return (
-    <button className={className} onClick={onClick} disabled={disabled}>
-      <span className="font-semibold shrink-0">{optionKey}.</span>
-      <span>{text}</span>
+    <button className={wrapperClass} onClick={onClick} disabled={disabled}>
+      <span className={indicatorClass}>{renderIndicator()}</span>
+      <span className="flex-1 leading-relaxed">{text}</span>
     </button>
   );
 }

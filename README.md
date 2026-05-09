@@ -1,6 +1,6 @@
 # AWS SAA-C03 Exam Prep
 
-A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questions. Supports practice mode with immediate feedback, timed exam simulation, progress tracking by domain, and bookmarks.
+A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questions. Supports practice mode with immediate feedback, timed exam simulation, progress tracking by domain, bookmarks, per-question accuracy stats, multiple-answer questions, and per-option explanations.
 
 ---
 
@@ -9,7 +9,7 @@ A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questi
 | Layer | Technology | Notes |
 |---|---|---|
 | Framework | Next.js 16.2.6 (App Router) | TypeScript, server components + client components |
-| Styling | Tailwind CSS v4 | Utility-first, dark mode support |
+| Styling | Tailwind CSS v4 | Dark theme (forced), mobile-first |
 | Auth | Clerk v7 | Sign up / sign in, route protection via `proxy.ts` |
 | Database | Supabase (PostgreSQL) | Service role key used in all API routes |
 | Deployment target | AWS | Amplify recommended; ECS/Fargate and SST/OpenNext are alternatives |
@@ -19,7 +19,9 @@ A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questi
 - **Clerk v7** — `SignedIn`/`SignedOut` components were removed; use the `useUser()` hook for conditional rendering in client components. Server-side auth uses `auth()` from `@clerk/nextjs/server`.
 - **Supabase service role** — all API routes use the service role key (bypasses RLS). Ownership is enforced in route handlers by checking the Clerk `userId`.
 - **Route protection** — `src/proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts`) protects all routes except `/`, `/sign-in`, and `/sign-up`.
-- **Build flag** — on darwin/arm64, the native SWC binary may be corrupted. Build with `next build --webpack` or fix with `npm install @next/swc-darwin-arm64 --force`.
+- **JSONB options** — questions store options and per-option explanations as JSONB columns (`options_json`, `explanations_json`), supporting any number of options (A–F+).
+- **Multi-answer questions** — `question_type` is `'single'` or `'multiple'`. Correct answers are comma-separated strings (e.g. `'A,C'`). The `isAnswerCorrect` helper in `src/lib/answers.ts` normalizes and compares answers.
+- **Per-question stats** — every practice answer is saved to `user_progress`. The `/api/question-stats` route aggregates `times_practiced`, `times_correct`, and `accuracy` on demand.
 
 ---
 
@@ -28,14 +30,14 @@ A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questi
 ```
 src/
 ├── app/
-│   ├── layout.tsx                      # ClerkProvider wrapper
+│   ├── layout.tsx                      # ClerkProvider wrapper, dark body
 │   ├── page.tsx                        # Landing page
 │   ├── sign-in/[[...sign-in]]/page.tsx
 │   ├── sign-up/[[...sign-up]]/page.tsx
 │   ├── dashboard/page.tsx              # Stats overview
 │   ├── practice/
 │   │   ├── page.tsx                    # Domain selector
-│   │   └── [domain]/page.tsx           # Practice session
+│   │   └── [domain]/page.tsx           # Practice session (fullscreen dark UI)
 │   ├── exam/
 │   │   ├── page.tsx                    # Exam start screen
 │   │   ├── new/page.tsx                # Creates session, redirects
@@ -43,32 +45,36 @@ src/
 │   │   └── results/[sessionId]/page.tsx
 │   ├── bookmarks/page.tsx
 │   └── api/
-│       ├── questions/route.ts
+│       ├── questions/route.ts          # Maps options_json/explanations_json to typed fields
+│       ├── practice/answer/route.ts    # Saves answer, returns is_correct
+│       ├── question-stats/route.ts     # Aggregates per-question stats
 │       ├── exam/start/route.ts
 │       ├── exam/submit/route.ts
 │       ├── progress/route.ts
 │       └── bookmarks/route.ts
 ├── components/
-│   ├── layout/Navbar.tsx
+│   ├── layout/Navbar.tsx               # Dark nav with Clerk UserButton
 │   ├── questions/
-│   │   ├── QuestionCard.tsx            # Handles practice + exam modes
-│   │   ├── OptionButton.tsx
-│   │   ├── ExplanationPanel.tsx
+│   │   ├── QuestionCard.tsx            # Fullscreen (practice) + card (exam) layouts
+│   │   ├── OptionButton.tsx            # Dark style, multiSelect support
+│   │   ├── ExplanationPanel.tsx        # Per-option explanations
 │   │   └── BookmarkButton.tsx
 │   ├── exam/
-│   │   ├── ExamTimer.tsx               # Countdown, turns red at 10 min
-│   │   ├── QuestionNavigator.tsx       # Grid of question numbers
-│   │   └── ExamResultsChart.tsx        # Domain breakdown
+│   │   ├── ExamTimer.tsx
+│   │   ├── QuestionNavigator.tsx
+│   │   └── ExamResultsChart.tsx
 │   └── dashboard/
 │       ├── StatsCard.tsx
 │       └── DomainProgressBar.tsx
-├── lib/supabase/server.ts              # Service role Supabase client
+├── lib/
+│   ├── supabase/server.ts              # Service role Supabase client
+│   └── answers.ts                      # normalizeAnswer, isAnswerCorrect, getCorrectKeys
 ├── types/index.ts
-├── constants/domains.ts                # Domain names, weights, exam config
+├── constants/domains.ts
 └── proxy.ts                            # Clerk route protection
 supabase/
 ├── schema.sql                          # Run first in Supabase SQL editor
-└── seed.sql                            # 10 seed questions across all 4 domains
+└── seed.sql                            # 20 questions across all 4 domains (single + multi-answer)
 ```
 
 ---
@@ -77,9 +83,31 @@ supabase/
 
 Four tables: `questions`, `exam_sessions`, `user_progress`, `user_bookmarks`.
 
+Key columns on `questions`:
+- `question_type` — `'single'` or `'multiple'`
+- `options_json` — JSONB array: `[{"key":"A","text":"..."},...]`
+- `correct` — comma-separated keys: `'A'` or `'A,C'`
+- `explanations_json` — JSONB map: `{"A":"...","B":"..."}`
+
 Run in order in the Supabase SQL editor:
 1. `supabase/schema.sql`
 2. `supabase/seed.sql`
+
+### Migration (existing DB)
+
+If upgrading an existing database, run these statements:
+
+```sql
+ALTER TABLE questions DROP CONSTRAINT questions_correct_check;
+ALTER TABLE questions ALTER COLUMN correct TYPE text;
+ALTER TABLE questions ADD CONSTRAINT questions_correct_check CHECK (correct ~ '^[A-Z](,[A-Z])*$');
+ALTER TABLE questions ADD COLUMN question_type text NOT NULL DEFAULT 'single' CHECK (question_type IN ('single', 'multiple'));
+ALTER TABLE questions ADD COLUMN options_json jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE questions ADD COLUMN explanations_json jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE user_progress DROP CONSTRAINT user_progress_selected_check;
+ALTER TABLE user_progress ALTER COLUMN selected TYPE text;
+ALTER TABLE user_progress ADD CONSTRAINT user_progress_selected_check CHECK (selected ~ '^[A-Z](,[A-Z])*$');
+```
 
 ---
 
@@ -113,7 +141,7 @@ Open [http://localhost:3000](http://localhost:3000).
 To build for production:
 
 ```bash
-npm run build -- --webpack
+npm run build
 ```
 
 ---
@@ -126,3 +154,16 @@ npm run build -- --webpack
 | Time limit | 130 minutes |
 | Passing score | 72% |
 | Domains | Design Secure Architectures (30%), Design Resilient Architectures (26%), Design High-Performing Architectures (24%), Design Cost-Optimized Architectures (20%) |
+
+---
+
+## TODO
+
+- [ ] Add authentication improvements (social login, email verification)
+- [ ] Deploy to AWS (Amplify or ECS/Fargate via SST/OpenNext)
+- [ ] Add more questions (target: 200+ across all domains)
+- [ ] Add question difficulty levels (easy / medium / hard)
+- [ ] Add spaced repetition algorithm (prioritize weak questions)
+- [ ] Wire up AI assistant button to Claude API
+- [ ] Add exam analytics (time per question, domain weak spots)
+- [ ] Add question search and filtering

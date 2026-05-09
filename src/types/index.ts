@@ -1,19 +1,17 @@
 export type Domain =
-  | 'Design Secure Architectures'
-  | 'Design Resilient Architectures'
-  | 'Design High-Performing Architectures'
-  | 'Design Cost-Optimized Architectures';
+  | "Design Secure Architectures"
+  | "Design Resilient Architectures"
+  | "Design High-Performing Architectures"
+  | "Design Cost-Optimized Architectures";
 
 export interface Question {
   id: string;
   domain: Domain;
   question: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
-  correct: 'A' | 'B' | 'C' | 'D';
-  explanation: string;
+  question_type: "single" | "multiple";
+  options: { key: string; text: string }[];
+  correct: string;
+  explanations: Record<string, string | null | undefined>;
   created_at: string;
 }
 
@@ -33,7 +31,7 @@ export interface UserProgress {
   user_id: string;
   question_id: string;
   is_correct: boolean;
-  selected: 'A' | 'B' | 'C' | 'D';
+  selected: string;
   attempted_at: string;
 }
 
@@ -49,4 +47,11 @@ export interface DomainStats {
   total: number;
   correct: number;
   percentage: number;
+}
+
+export interface QuestionStats {
+  question_id: string;
+  times_practiced: number;
+  times_correct: number;
+  accuracy: number;
 }

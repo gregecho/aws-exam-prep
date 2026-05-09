@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { isAnswerCorrect } from '@/lib/answers';
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
   let score = 0;
   const progressRows = questions.map((q) => {
     const selected = answers[q.id];
-    const isCorrect = selected === q.correct;
+    const isCorrect = isAnswerCorrect(selected, q.correct);
     if (isCorrect) score++;
     return { user_id: userId, question_id: q.id, is_correct: isCorrect, selected };
   });

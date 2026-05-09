@@ -7,36 +7,36 @@ export default function Navbar() {
   const { isSignedIn } = useUser();
 
   return (
-    <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <nav className="border-b border-[#2a2a4a] bg-[#1a1a2e]">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-zinc-900 dark:text-zinc-50">
+        <Link href="/" className="font-semibold text-white">
           AWS SAA-C03
         </Link>
         <div className="flex items-center gap-6 text-sm">
           {isSignedIn ? (
             <>
-              <Link href="/dashboard" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
                 Dashboard
               </Link>
-              <Link href="/practice" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+              <Link href="/practice" className="text-zinc-400 hover:text-white transition-colors">
                 Practice
               </Link>
-              <Link href="/exam" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+              <Link href="/exam" className="text-zinc-400 hover:text-white transition-colors">
                 Exam
               </Link>
-              <Link href="/bookmarks" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+              <Link href="/bookmarks" className="text-zinc-400 hover:text-white transition-colors">
                 Bookmarks
               </Link>
               <UserButton />
             </>
           ) : (
             <>
-              <Link href="/sign-in" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+              <Link href="/sign-in" className="text-zinc-400 hover:text-white transition-colors">
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400 transition-colors"
               >
                 Sign up
               </Link>
