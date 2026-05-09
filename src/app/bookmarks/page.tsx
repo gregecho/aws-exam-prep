@@ -32,15 +32,19 @@ export default async function BookmarksPage() {
     .filter(Boolean) as Question[];
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1" style={{ background: 'var(--bg-primary)', color: 'var(--foreground)' }}>
       <Navbar />
       <main className="max-w-3xl mx-auto w-full px-4 py-10 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Bookmarks</h1>
-          <p className="text-zinc-500 mt-1">{questions.length} bookmarked question{questions.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold tracking-tight">Bookmarks</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            {questions.length} bookmarked question{questions.length !== 1 ? 's' : ''}
+          </p>
         </div>
         {questions.length === 0 ? (
-          <p className="text-zinc-500">No bookmarks yet. Bookmark questions while practicing to review them here.</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            No bookmarks yet. Bookmark questions while practicing to review them here.
+          </p>
         ) : (
           <BookmarksClient initialQuestions={questions} />
         )}

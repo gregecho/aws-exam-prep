@@ -25,9 +25,11 @@ export default function ExamTimer({ durationMinutes, onExpire }: ExamTimerProps)
 
   return (
     <div
-      className={`font-mono text-lg font-semibold tabular-nums ${
-        isWarning ? 'text-red-600 dark:text-red-400' : 'text-zinc-700 dark:text-zinc-300'
-      }`}
+      className="text-base font-semibold tabular-nums"
+      style={{
+        fontFamily: 'var(--font-mono)',
+        color: isWarning ? 'var(--accent-red)' : 'var(--text-secondary)',
+      }}
       aria-live="polite"
       aria-label={`Time remaining: ${minutes} minutes ${seconds} seconds`}
     >

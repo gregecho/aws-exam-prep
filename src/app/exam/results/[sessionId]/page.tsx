@@ -6,6 +6,7 @@ import { auth } from '@clerk/nextjs/server';
 import { DOMAINS } from '@/constants/domains';
 import { DomainStats } from '@/types';
 import { notFound } from 'next/navigation';
+import { isAnswerCorrect } from '@/lib/answers';
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -40,7 +41,7 @@ export default async function ExamResultsPage({ params }: Props) {
   for (const q of questions ?? []) {
     if (statsMap[q.domain]) {
       statsMap[q.domain].total++;
-      if (answers[q.id] === q.correct) statsMap[q.domain].correct++;
+      if (answers[q.id] && isAnswerCorrect(answers[q.id], q.correct)) statsMap[q.domain].correct++;
     }
   }
 
@@ -58,7 +59,7 @@ export default async function ExamResultsPage({ params }: Props) {
     <div className="flex flex-col flex-1">
       <Navbar />
       <main className="max-w-2xl mx-auto w-full px-4 py-10 space-y-8">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Exam Results</h1>
+        <h1 className="text-2xl font-bold text-white">Exam Results</h1>
         <ExamResultsChart
           stats={domainStats}
           score={session.score ?? 0}
@@ -67,13 +68,13 @@ export default async function ExamResultsPage({ params }: Props) {
         <div className="flex gap-3">
           <Link
             href="/exam"
-            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            className="rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-500 transition-colors"
           >
             Take another exam
           </Link>
           <Link
             href="/dashboard"
-            className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-lg border border-[#2a2a4a] px-5 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
           >
             Dashboard
           </Link>

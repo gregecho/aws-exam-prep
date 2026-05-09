@@ -1,44 +1,78 @@
 'use client';
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+
+const NAV_LINKS = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/practice', label: 'Practice' },
+  { href: '/exam', label: 'Exam' },
+  { href: '/bookmarks', label: 'Bookmarks' },
+];
 
 export default function Navbar() {
   const { isSignedIn } = useUser();
+  const pathname = usePathname();
 
   return (
-    <nav className="border-b border-[#2a2a4a] bg-[#1a1a2e]">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-white">
-          AWS SAA-C03
+    <nav style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
+      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <span
+            className="text-xs font-semibold px-1.5 py-0.5 rounded"
+            style={{
+              background: 'var(--highlight)',
+              color: '#000',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.05em',
+            }}
+          >
+            AWS
+          </span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            SAA-C03
+          </span>
         </Link>
-        <div className="flex items-center gap-6 text-sm">
+
+        <div className="flex items-center gap-1">
           {isSignedIn ? (
             <>
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <Link href="/practice" className="text-zinc-400 hover:text-white transition-colors">
-                Practice
-              </Link>
-              <Link href="/exam" className="text-zinc-400 hover:text-white transition-colors">
-                Exam
-              </Link>
-              <Link href="/bookmarks" className="text-zinc-400 hover:text-white transition-colors">
-                Bookmarks
-              </Link>
-              <UserButton />
+              {NAV_LINKS.map(({ href, label }) => {
+                const active = pathname === href || pathname.startsWith(href + '/');
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="px-3 py-1.5 rounded-md text-sm transition-colors"
+                    style={{
+                      color: active ? 'var(--foreground)' : 'var(--text-secondary)',
+                      background: active ? 'var(--border)' : 'transparent',
+                    }}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+              <div className="ml-2">
+                <UserButton />
+              </div>
             </>
           ) : (
             <>
-              <Link href="/sign-in" className="text-zinc-400 hover:text-white transition-colors">
+              <Link
+                href="/sign-in"
+                className="px-3 py-1.5 rounded-md text-sm transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400 transition-colors"
+                className="ml-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
               >
-                Sign up
+                Get started
               </Link>
             </>
           )}

@@ -9,27 +9,41 @@ export default function ExplanationPanel({ isCorrect, correctKeys, selectedKeys,
   const allKeys = Array.from(new Set([...selectedKeys, ...correctKeys])).sort();
 
   return (
-    <div className="rounded-xl border border-[#2a2a4a] bg-[#1a1a2e] p-4 text-sm space-y-3">
-      <p className={`font-semibold text-base ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-        {isCorrect ? '✓ Correct!' : `✗ Incorrect — correct: ${correctKeys.join(', ')}`}
+    <div
+      className="rounded-xl p-4 space-y-4 text-sm"
+      style={{ background: 'var(--bg-card)', border: `1px solid ${isCorrect ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)'}` }}
+    >
+      <p
+        className="font-semibold"
+        style={{ color: isCorrect ? 'var(--accent-green)' : 'var(--accent-red)' }}
+      >
+        {isCorrect ? '✓ Correct' : `✗ Incorrect — correct: ${correctKeys.join(', ')}`}
       </p>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {allKeys.map((key) => {
           const isCorrectKey = correctKeys.includes(key);
           const isSelectedKey = selectedKeys.includes(key);
           const explanation = explanations[key];
           return (
             <div key={key} className="flex gap-3">
-              <span className={`shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold mt-0.5 ${
-                isCorrectKey ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-              }`}>
+              <span
+                className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-xs font-bold mt-0.5"
+                style={{
+                  background: isCorrectKey ? 'var(--accent-green)' : 'var(--accent-red)',
+                  color: '#fff',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
                 {key}
               </span>
-              <div className="space-y-0.5">
-                <p className={`text-xs font-medium ${isCorrectKey ? 'text-green-400' : 'text-red-400'}`}>
+              <div className="space-y-1">
+                <p
+                  className="text-xs font-medium"
+                  style={{ color: isCorrectKey ? 'var(--accent-green)' : 'var(--accent-red)' }}
+                >
                   {isCorrectKey ? 'Correct' : isSelectedKey ? 'Incorrect' : 'Also incorrect'}
                 </p>
-                <p className="text-zinc-300 leading-relaxed">
+                <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   {explanation ?? 'No explanation available.'}
                 </p>
               </div>

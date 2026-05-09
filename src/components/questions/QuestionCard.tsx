@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { Question, QuestionStats } from '@/types';
 import OptionButton from './OptionButton';
 import ExplanationPanel from './ExplanationPanel';
@@ -86,13 +87,21 @@ export default function QuestionCard({
 
   if (!isFullscreen) {
     return (
-      <div className="rounded-xl border border-[#2a2a4a] bg-[#1a1a2e] p-6 space-y-4">
+      <div
+        className="rounded-xl p-6 space-y-4"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             {questionNumber !== undefined && totalQuestions !== undefined && (
-              <p className="text-xs text-zinc-500">Question {questionNumber} of {totalQuestions}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                {questionNumber} / {totalQuestions}
+              </p>
             )}
-            <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-sky-900 text-sky-300">
+            <span
+              className="inline-block text-xs font-medium px-2 py-0.5 rounded"
+              style={{ background: 'var(--bg-option)', color: 'var(--highlight)', border: '1px solid var(--border)' }}
+            >
               {question.domain}
             </span>
           </div>
@@ -100,7 +109,7 @@ export default function QuestionCard({
             <BookmarkButton questionId={question.id} isBookmarked={isBookmarked} onToggle={onBookmarkToggle} />
           )}
         </div>
-        <p className="text-white leading-relaxed">{question.question}</p>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>{question.question}</p>
         <div className="space-y-2">
           {question.options.map(({ key, text }) => (
             <OptionButton
@@ -129,60 +138,100 @@ export default function QuestionCard({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0f0f1a]">
-      {/* Top bar */}
-      <div className="bg-[#1a1a2e] px-4 pt-4 pb-2 space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-zinc-400">Practice Mode</span>
-          <span className="text-green-400 font-medium">✓ {score}</span>
-          <span className="text-zinc-300">
-            {questionNumber} / {totalQuestions}
-          </span>
-        </div>
-        <div className="w-full h-1.5 bg-[#2a2a4a] rounded-full overflow-hidden">
+    <div
+      className="flex flex-col min-h-screen"
+      style={{ background: 'var(--bg-primary)', color: 'var(--foreground)' }}
+    >
+      {/* Top bar — replaces navbar in practice mode */}
+      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
+        <div className="px-4 pt-3 pb-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/practice"
+              className="flex items-center gap-1.5 text-xs transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <span>←</span>
+              <span>Exit</span>
+            </Link>
+            <div className="flex items-center gap-4">
+              <span
+                className="text-xs"
+                style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-green)' }}
+              >
+                ✓ {score}
+              </span>
+              <span
+                className="text-xs"
+                style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}
+              >
+                {questionNumber} / {totalQuestions}
+              </span>
+              {onBookmarkToggle && (
+                <BookmarkButton questionId={question.id} isBookmarked={isBookmarked} onToggle={onBookmarkToggle} />
+              )}
+            </div>
+          </div>
+          {/* Progress bar */}
           <div
-            className="h-full bg-sky-500 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+            className="w-full h-0.5 rounded-full overflow-hidden"
+            style={{ background: 'var(--border)' }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${progress}%`, background: 'var(--highlight)' }}
+            />
+          </div>
         </div>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Domain + type badges */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-sky-900 text-sky-300 border border-sky-700">
-              {question.domain}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 max-w-2xl mx-auto w-full">
+        {/* Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded"
+            style={{
+              background: 'var(--bg-option)',
+              color: 'var(--highlight)',
+              border: '1px solid var(--border)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {question.domain.split(' ').map(w => w[0]).join('')}
+          </span>
+          <span
+            className="text-xs px-2 py-0.5 rounded"
+            style={{ background: 'var(--bg-option)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+          >
+            {isMultiple ? `Multi · pick ${correctKeys.length}` : 'Single'}
+          </span>
+          {stats && stats.times_practiced > 0 && (
+            <span
+              className="text-xs px-2 py-0.5 rounded"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                background: 'var(--bg-option)',
+                border: '1px solid var(--border)',
+                color: stats.accuracy >= 70
+                  ? 'var(--accent-green)'
+                  : stats.accuracy >= 40
+                  ? '#f59e0b'
+                  : 'var(--accent-red)',
+              }}
+            >
+              {stats.accuracy}% · {stats.times_practiced}×
             </span>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-[#2a2a4a] text-zinc-300">
-              {isMultiple ? `Multiple (select ${correctKeys.length})` : 'Single'}
-            </span>
-            {stats && stats.times_practiced > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                stats.accuracy >= 70 ? 'bg-green-900 text-green-300' :
-                stats.accuracy >= 40 ? 'bg-yellow-900 text-yellow-300' :
-                'bg-red-900 text-red-300'
-              }`}>
-                {stats.accuracy}% ({stats.times_practiced}×)
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {onBookmarkToggle && (
-              <BookmarkButton questionId={question.id} isBookmarked={isBookmarked} onToggle={onBookmarkToggle} />
-            )}
-            <button className="text-zinc-500 hover:text-zinc-300 text-lg px-1" aria-label="More options">
-              ···
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Question text */}
-        <p className="text-white text-base leading-relaxed">{question.question}</p>
+        <p className="text-base leading-relaxed" style={{ color: 'var(--foreground)' }}>
+          {question.question}
+        </p>
 
         {/* Options */}
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {question.options.map(({ key, text }) => (
             <OptionButton
               key={key}
@@ -198,11 +247,12 @@ export default function QuestionCard({
           ))}
         </div>
 
-        {/* Check answer button for multi-select */}
+        {/* Check answer for multi-select */}
         {isMultiple && !revealed && localSelected.length > 0 && (
           <button
             onClick={handleCheck}
-            className="w-full rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white hover:bg-sky-500 transition-colors"
+            className="w-full rounded-xl py-3 text-sm font-semibold transition-opacity hover:opacity-90"
+            style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
           >
             Check Answer
           </button>
@@ -218,23 +268,27 @@ export default function QuestionCard({
           />
         )}
 
-        {/* Bottom padding so content clears the fixed bottom bar */}
         <div className="h-20" />
       </div>
 
       {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-[#2a2a4a] px-4 py-3 flex items-center justify-between gap-3">
+      <div
+        className="fixed bottom-0 left-0 right-0 px-4 py-3 flex items-center justify-between gap-3"
+        style={{ background: 'var(--bg-card)', borderTop: '1px solid var(--border)' }}
+      >
         <button
           onClick={() => dialogRef.current?.showModal()}
-          className="flex items-center gap-1.5 rounded-xl border border-[#2a2a4a] px-4 py-2.5 text-sm text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors"
+          style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
         >
-          <span>+</span> Ask AI
+          Ask AI
         </button>
         <div className="flex gap-2">
           {onPrev && (
             <button
               onClick={onPrev}
-              className="rounded-xl border border-[#2a2a4a] px-4 py-2.5 text-sm text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
+              className="px-4 py-2 rounded-lg text-sm transition-colors"
+              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             >
               ← Prev
             </button>
@@ -242,7 +296,8 @@ export default function QuestionCard({
           <button
             onClick={onNext}
             disabled={!onNext}
-            className="rounded-xl bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-40 transition-colors"
+            className="px-6 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-30"
+            style={{ background: 'var(--accent-green)', color: '#fff' }}
           >
             Next →
           </button>
@@ -252,14 +307,22 @@ export default function QuestionCard({
       {/* Ask AI dialog */}
       <dialog
         ref={dialogRef}
-        className="rounded-xl bg-[#1a1a2e] border border-[#2a2a4a] text-white p-6 max-w-sm w-full backdrop:bg-black/60"
+        className="rounded-xl p-6 max-w-sm w-full"
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          color: 'var(--foreground)',
+        }}
         onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}
       >
         <h2 className="text-base font-semibold mb-2">AI Assistant</h2>
-        <p className="text-zinc-400 text-sm">AI assistant coming soon. You&apos;ll be able to ask questions about this topic here.</p>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          AI assistant coming soon. You&apos;ll be able to ask questions about this topic here.
+        </p>
         <button
           onClick={() => dialogRef.current?.close()}
-          className="mt-4 w-full rounded-lg bg-[#2a2a4a] py-2 text-sm text-zinc-300 hover:bg-[#3a3a5a] transition-colors"
+          className="mt-4 w-full rounded-lg py-2 text-sm transition-colors"
+          style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}
         >
           Close
         </button>

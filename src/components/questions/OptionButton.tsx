@@ -21,38 +21,65 @@ export default function OptionButton({
   multiSelect,
   onClick,
 }: OptionButtonProps) {
-  let wrapperClass = 'w-full flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-all ';
-  let indicatorClass = 'shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold border-2 transition-all ';
+  let borderColor = 'var(--border)';
+  let bgColor = 'var(--bg-option)';
+  let textColor = 'var(--text-secondary)';
+  let indicatorBg = 'transparent';
+  let indicatorBorder = 'var(--border)';
+  let indicatorColor = 'var(--text-muted)';
+  let indicatorContent: string = optionKey;
 
   if (incorrect) {
-    wrapperClass += 'border-red-500 bg-[#2a0f0f] text-white';
-    indicatorClass += 'border-red-500 bg-red-500 text-white';
+    borderColor = 'var(--accent-red)';
+    bgColor = 'rgba(244,63,94,0.08)';
+    textColor = 'var(--foreground)';
+    indicatorBg = 'var(--accent-red)';
+    indicatorBorder = 'var(--accent-red)';
+    indicatorColor = '#fff';
+    indicatorContent = '✕';
   } else if (correct) {
-    wrapperClass += 'border-green-500 bg-[#0f2a1a] text-white';
-    indicatorClass += 'border-green-500 bg-green-500 text-white';
+    borderColor = 'var(--accent-green)';
+    bgColor = 'rgba(16,185,129,0.08)';
+    textColor = 'var(--foreground)';
+    indicatorBg = 'var(--accent-green)';
+    indicatorBorder = 'var(--accent-green)';
+    indicatorColor = '#fff';
+    indicatorContent = '✓';
   } else if (selected) {
-    wrapperClass += 'border-sky-400 bg-[#1e2d4a] text-white';
-    indicatorClass += 'border-sky-400 bg-sky-400 text-white';
-  } else {
-    wrapperClass += 'border-[#2a2a4a] bg-[#16213e] text-zinc-300 hover:border-zinc-500 hover:bg-[#1e2a40]';
-    indicatorClass += 'border-[#3a3a5a] bg-transparent text-zinc-400';
+    borderColor = 'var(--accent)';
+    bgColor = 'rgba(245,158,11,0.08)';
+    textColor = 'var(--foreground)';
+    indicatorBg = 'var(--accent)';
+    indicatorBorder = 'var(--accent)';
+    indicatorColor = '#000';
   }
 
-  if (multiSelect) {
-    indicatorClass = indicatorClass.replace('rounded-full', 'rounded-md');
-  }
-
-  if (disabled) wrapperClass += ' cursor-default';
-
-  function renderIndicator() {
-    if (incorrect) return <span>✕</span>;
-    if (correct) return <span>✓</span>;
-    return <span>{optionKey}</span>;
-  }
+  const indicatorRadius = multiSelect ? '4px' : '50%';
 
   return (
-    <button className={wrapperClass} onClick={onClick} disabled={disabled}>
-      <span className={indicatorClass}>{renderIndicator()}</span>
+    <button
+      className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm transition-all"
+      style={{
+        border: `1px solid ${borderColor}`,
+        background: bgColor,
+        color: textColor,
+        cursor: disabled ? 'default' : 'pointer',
+      }}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <span
+        className="shrink-0 w-7 h-7 flex items-center justify-center text-xs font-bold border-2 transition-all"
+        style={{
+          borderRadius: indicatorRadius,
+          background: indicatorBg,
+          borderColor: indicatorBorder,
+          color: indicatorColor,
+          fontFamily: 'var(--font-mono)',
+        }}
+      >
+        {indicatorContent}
+      </span>
       <span className="flex-1 leading-relaxed">{text}</span>
     </button>
   );

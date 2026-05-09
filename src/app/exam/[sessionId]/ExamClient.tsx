@@ -58,30 +58,35 @@ export default function ExamClient({ sessionId }: ExamClientProps) {
     }
   }, [submitting, sessionId, answers, router]);
 
-  if (loading) return <div className="flex flex-1 items-center justify-center text-zinc-500">Loading exam…</div>;
+  if (loading) return (
+    <div className="flex flex-1 items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+      Loading exam…
+    </div>
+  );
 
   const question = questions[index];
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1" style={{ background: 'var(--bg-primary)', color: 'var(--foreground)' }}>
       <Navbar />
-      <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-          <span className="text-sm text-zinc-500">
-            Question {index + 1} of {questions.length}
+      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
+          <span className="text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            {index + 1} / {questions.length}
           </span>
           <ExamTimer durationMinutes={EXAM_DURATION_MINUTES} onExpire={handleSubmit} />
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg px-4 py-1.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+            style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
           >
-            {submitting ? 'Submitting…' : 'Submit exam'}
+            {submitting ? 'Submitting…' : 'Submit'}
           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 max-w-6xl mx-auto w-full px-4 py-6 gap-6">
+      <div className="flex flex-1 max-w-5xl mx-auto w-full px-4 py-6 gap-6">
         <main className="flex-1 space-y-4">
           {question && (
             <QuestionCard
@@ -98,21 +103,23 @@ export default function ExamClient({ sessionId }: ExamClientProps) {
             <button
               onClick={() => setIndex((i) => Math.max(0, i - 1))}
               disabled={index === 0}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-lg px-4 py-2 text-sm transition-colors disabled:opacity-30"
+              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             >
-              Previous
+              ← Previous
             </button>
             <button
               onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
               disabled={index === questions.length - 1}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-900"
+              className="rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-30"
+              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             >
-              Next
+              Next →
             </button>
           </div>
         </main>
 
-        <aside className="w-48 shrink-0 hidden lg:block">
+        <aside className="w-44 shrink-0 hidden lg:block">
           <QuestionNavigator
             total={questions.length}
             current={index}
