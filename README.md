@@ -6,13 +6,13 @@ A web app for practicing AWS Solutions Architect Associate (SAA-C03) exam questi
 
 ## Tech Stack
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Framework | Next.js 16.2.6 (App Router) | TypeScript, server components + client components |
-| Styling | Tailwind CSS v4 | Dark theme (forced), mobile-first |
-| Auth | Clerk v7 | Sign up / sign in, route protection via `proxy.ts` |
-| Database | Supabase (PostgreSQL) | Service role key used in all API routes |
-| Deployment target | AWS | Amplify recommended; ECS/Fargate and SST/OpenNext are alternatives |
+| Layer             | Technology                  | Notes                                                              |
+| ----------------- | --------------------------- | ------------------------------------------------------------------ |
+| Framework         | Next.js 16.2.6 (App Router) | TypeScript, server components + client components                  |
+| Styling           | Tailwind CSS v4             | Dark theme (forced), mobile-first                                  |
+| Auth              | Clerk v7                    | Sign up / sign in, route protection via `proxy.ts`                 |
+| Database          | Supabase (PostgreSQL)       | Service role key used in all API routes                            |
+| Deployment target | AWS                         | Amplify recommended; ECS/Fargate and SST/OpenNext are alternatives |
 
 ### Key architectural decisions
 
@@ -84,12 +84,14 @@ supabase/
 Four tables: `questions`, `exam_sessions`, `user_progress`, `user_bookmarks`.
 
 Key columns on `questions`:
+
 - `question_type` — `'single'` or `'multiple'`
 - `options_json` — JSONB array: `[{"key":"A","text":"..."},...]`
 - `correct` — comma-separated keys: `'A'` or `'A,C'`
 - `explanations_json` — JSONB map: `{"A":"...","B":"..."}`
 
 Run in order in the Supabase SQL editor:
+
 1. `supabase/schema.sql`
 2. `supabase/seed.sql`
 
@@ -148,12 +150,12 @@ npm run build
 
 ## Exam Details
 
-| | |
-|---|---|
-| Questions | 65 |
-| Time limit | 130 minutes |
-| Passing score | 72% |
-| Domains | Design Secure Architectures (30%), Design Resilient Architectures (26%), Design High-Performing Architectures (24%), Design Cost-Optimized Architectures (20%) |
+|               |                                                                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Questions     | 65                                                                                                                                                             |
+| Time limit    | 130 minutes                                                                                                                                                    |
+| Passing score | 72%                                                                                                                                                            |
+| Domains       | Design Secure Architectures (30%), Design Resilient Architectures (26%), Design High-Performing Architectures (24%), Design Cost-Optimized Architectures (20%) |
 
 ---
 
@@ -161,7 +163,7 @@ npm run build
 
 - [ ] Add authentication improvements (social login, email verification)
 - [ ] Deploy to AWS (Amplify or ECS/Fargate via SST/OpenNext)
-- [ ] Add more questions (target: 200+ across all domains)
+- [x] Add more questions (target: 200+ across all domains)
 - [ ] Add question difficulty levels (easy / medium / hard)
 - [ ] Add spaced repetition algorithm (prioritize weak questions)
 - [ ] Wire up AI assistant button to Claude API
