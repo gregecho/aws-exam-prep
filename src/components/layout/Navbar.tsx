@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+import SubscriptionBadge from "./SubscriptionBadge";
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -54,6 +55,7 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+              <SubscriptionBadge />
               <div className="ml-2">
                 <UserButton />
               </div>
