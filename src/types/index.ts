@@ -1,3 +1,8 @@
+export type SubscriptionStatus =
+  | { access: 'trial'; daysLeft: number }
+  | { access: 'paid'; examsToday: number }
+  | { access: 'expired' };
+
 export type Domain =
   | "Design Secure Architectures"
   | "Design Resilient Architectures"

@@ -61,6 +61,13 @@ Next.js 16 App Router with TypeScript. All routes under `src/app/`. Server compo
 - `/api/exam/start` fetches all question IDs and shuffles in JS — no limit bias.
 - `/api/questions` supports `id=eq.<uuid>` params (sent by ExamClient) via `.in('id', ids)` filter.
 
+**Subscription tiers**
+- `src/lib/subscription.ts` — `getSubscriptionStatus(userId, supabase)` returns a `SubscriptionStatus` discriminated union: `{ access: 'trial'; daysLeft }`, `{ access: 'paid'; examsToday }`, or `{ access: 'expired' }`.
+- Row is created lazily on first call (no signup webhook needed). Free tier = 3-day trial from `trial_started_at`.
+- Enforcement: `/practice` and `/practice/[domain]` show an upgrade prompt if expired. `/exam` shows a locked state if not paid. `/api/exam/start` returns 403 if not paid, 429 if daily limit reached (`MAX_EXAMS_PER_DAY = 3`).
+- `/upgrade` — pricing page with mock upgrade buttons that call `/api/admin/subscription`. Remove or protect this route before going to production.
+- `/api/admin/subscription` — mock admin API for testing tier states (upgrade/downgrade/expire_trial/reset). Acts on the currently authenticated user.
+
 ## Styling
 
 Tailwind CSS v4, forced dark theme. Core CSS variables:

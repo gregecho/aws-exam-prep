@@ -58,9 +58,20 @@ create table user_notes (
   unique (user_id, question_id)
 );
 
+create table user_subscriptions (
+  id               uuid primary key default uuid_generate_v4(),
+  user_id          text not null unique,
+  tier             text not null default 'free' check (tier in ('free', 'paid')),
+  trial_started_at timestamptz not null default now(),
+  paid_until       timestamptz,
+  created_at       timestamptz default now(),
+  updated_at       timestamptz default now()
+);
+
 create index on user_progress (user_id);
 create index on user_bookmarks (user_id);
 create index on user_notes (user_id);
+create index on user_subscriptions (user_id);
 create index on exam_sessions (user_id);
 
 -- ================================================================

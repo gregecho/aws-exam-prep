@@ -81,7 +81,7 @@ supabase/
 
 ## Database Schema
 
-Four tables: `questions`, `exam_sessions`, `user_progress`, `user_bookmarks`.
+Five tables: `questions`, `exam_sessions`, `user_progress`, `user_bookmarks`, `user_notes`, `user_subscriptions`.
 
 Key columns on `questions`:
 
@@ -89,6 +89,7 @@ Key columns on `questions`:
 - `options_json` — JSONB array: `[{"key":"A","text":"..."},...]`
 - `correct` — comma-separated keys: `'A'` or `'A,C'`
 - `explanations_json` — JSONB map: `{"A":"...","B":"..."}`
+- `question_number` — stable integer (1-N by insertion order), used for display
 
 Run in order in the Supabase SQL editor:
 
@@ -159,6 +160,27 @@ npm run build
 
 ---
 
+## Subscription Tiers
+
+| Feature | Free (3-day trial) | Paid |
+|---|---|---|
+| Practice mode | ✓ | ✓ |
+| Progress tracking | ✓ | ✓ |
+| Bookmarks & notes | ✓ | ✓ |
+| Exam simulation | ✗ | ✓ (max 3/day) |
+
+Subscription state is stored in the `user_subscriptions` table. A row is created lazily on first access — no signup webhook needed.
+
+**Testing tiers** — visit `/upgrade` to toggle tier states without a real payment provider:
+- Upgrade (1 month / 3 months / 1 year)
+- Expire trial (simulates 3-day trial elapsed)
+- Downgrade to free
+- Reset (fresh trial)
+
+When wiring up a real payment provider, update `user_subscriptions.tier` and `paid_until` from the webhook, then remove or protect `/api/admin/subscription` and the mock buttons on `/upgrade`.
+
+---
+
 ## TODO
 
 - [ ] Add authentication improvements (social login, email verification)
@@ -169,3 +191,5 @@ npm run build
 - [ ] Wire up AI assistant button to Claude API
 - [ ] Add exam analytics (time per question, domain weak spots)
 - [ ] Add question search and filtering
+- [x] Implement subscription tiers (free trial + paid)
+- [ ] Wire up real payment provider (Stripe recommended)

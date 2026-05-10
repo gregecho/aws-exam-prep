@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { EXAM_QUESTION_COUNT } from '@/constants/domains';
+import { getSubscriptionStatus, MAX_EXAMS_PER_DAY } from '@/lib/subscription';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -17,6 +18,22 @@ export async function POST() {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = createServerClient();
+
+  const status = await getSubscriptionStatus(userId, supabase);
+
+  if (status.access !== 'paid') {
+    return NextResponse.json(
+      { error: 'Exam access requires a paid subscription.' },
+      { status: 403 }
+    );
+  }
+
+  if (status.examsToday >= MAX_EXAMS_PER_DAY) {
+    return NextResponse.json(
+      { error: `Daily exam limit reached (${MAX_EXAMS_PER_DAY}/day). Try again tomorrow.` },
+      { status: 429 }
+    );
+  }
 
   const { data: questions, error: qErr } = await supabase
     .from('questions')
