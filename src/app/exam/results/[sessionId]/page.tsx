@@ -115,6 +115,8 @@ export default async function ExamResultsPage({ params }: Props) {
                         <Link
                           key={q.id}
                           href={`/practice/${encodeURIComponent(domain)}?q=${q.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-xs font-semibold px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
                           style={{
                             fontFamily: 'var(--font-mono)',
