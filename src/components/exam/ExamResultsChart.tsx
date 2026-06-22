@@ -11,20 +11,25 @@ export default function ExamResultsChart({ stats, score, total }: ExamResultsCha
   const passed = pct >= 72;
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-1">
-        <p className="text-5xl font-bold text-zinc-900 dark:text-zinc-50">{pct}%</p>
-        <p className="text-sm text-zinc-500">
+    <div
+      className="rounded-xl p-6 space-y-6"
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+    >
+      <div className="text-center space-y-2">
+        <p className="text-7xl font-black tracking-tight" style={{ color: 'var(--foreground)' }}>
+          {pct}%
+        </p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {score} / {total} correct
         </p>
         <span
-          className={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${
-            passed
-              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-          }`}
+          className="inline-block text-sm font-semibold px-3 py-1 rounded-full"
+          style={{
+            background: passed ? 'rgba(16,185,129,0.15)' : 'rgba(244,63,94,0.15)',
+            color: passed ? 'var(--accent-green)' : 'var(--accent-red)',
+          }}
         >
-          {passed ? 'PASS' : 'FAIL'} (passing score: 72%)
+          {passed ? 'PASS' : 'FAIL'} — passing score: 72%
         </span>
       </div>
 
@@ -32,17 +37,20 @@ export default function ExamResultsChart({ stats, score, total }: ExamResultsCha
         {stats.map((s) => (
           <div key={s.domain} className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-xs">{s.domain}</span>
-              <span className="text-zinc-500 shrink-0 ml-2">
+              <span className="truncate max-w-xs" style={{ color: 'var(--text-secondary)' }}>
+                {s.domain}
+              </span>
+              <span className="shrink-0 ml-2" style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                 {s.correct}/{s.total} ({s.percentage}%)
               </span>
             </div>
-            <div className="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
               <div
-                className={`h-full rounded-full transition-all ${
-                  s.percentage >= 72 ? 'bg-green-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${s.percentage}%` }}
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${s.percentage}%`,
+                  background: s.percentage >= 72 ? 'var(--accent-green)' : 'var(--accent-red)',
+                }}
               />
             </div>
           </div>

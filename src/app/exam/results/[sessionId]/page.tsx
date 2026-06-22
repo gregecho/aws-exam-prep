@@ -32,7 +32,7 @@ export default async function ExamResultsPage({ params }: Props) {
 
   const { data: questions } = await supabase
     .from('questions')
-    .select('id, correct, domain')
+    .select('id, correct, domain, question_number, question')
     .in('id', questionIds);
 
   const statsMap: Record<string, { total: number; correct: number }> = {};
@@ -56,6 +56,10 @@ export default async function ExamResultsPage({ params }: Props) {
     bankCount: 0,
     practicedCount: 0,
   }));
+
+  const incorrectQuestions = (questions ?? [])
+    .filter((q) => answers[q.id] && !isAnswerCorrect(answers[q.id], q.correct))
+    .sort((a, b) => (a.question_number ?? 0) - (b.question_number ?? 0));
 
   return (
     <div className="flex flex-col flex-1">
@@ -81,6 +85,39 @@ export default async function ExamResultsPage({ params }: Props) {
             Dashboard
           </Link>
         </div>
+
+        {incorrectQuestions.length > 0 && (
+          <div
+            className="rounded-xl p-6 space-y-4"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+          >
+            <h2
+              className="text-sm font-semibold uppercase tracking-widest"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Incorrect ({incorrectQuestions.length})
+            </h2>
+            <div className="space-y-2">
+              {incorrectQuestions.map((q) => (
+                <div
+                  key={q.id}
+                  className="flex gap-3 py-2.5 px-3 rounded-lg"
+                  style={{ background: 'var(--bg-option)' }}
+                >
+                  <span
+                    className="shrink-0 text-xs mt-0.5"
+                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
+                  >
+                    Q{q.question_number}
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {q.question}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

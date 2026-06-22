@@ -18,7 +18,7 @@ async function getStats(userId: string) {
     supabase.from("questions").select("id, domain"),
     supabase
       .from("exam_sessions")
-      .select("score, total, completed_at")
+      .select("id, score, total, completed_at")
       .eq("user_id", userId)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false })
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
                     <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {new Date(s.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                       <span className="text-sm" style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                         {s.score}/{s.total}
                       </span>
@@ -140,6 +140,16 @@ export default async function DashboardPage() {
                       >
                         {pct}%
                       </span>
+                      <span className="text-xs" style={{ color: 'var(--accent-red)' }}>
+                        {s.total - s.score} wrong
+                      </span>
+                      <Link
+                        href={`/exam/results/${s.id}`}
+                        className="text-xs hover:underline"
+                        style={{ color: 'var(--accent-teal)' }}
+                      >
+                        Review →
+                      </Link>
                     </div>
                   </div>
                 );
