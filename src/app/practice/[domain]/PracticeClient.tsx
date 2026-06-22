@@ -61,6 +61,11 @@ export default function PracticeClient({ domain }: PracticeClientProps) {
       fetch('/api/notes').then((r) => r.json()),
     ]).then(([qData, bData, sData, nData]) => {
       setQuestions(qData.questions ?? []);
+      const targetId = new URLSearchParams(window.location.search).get('q');
+      if (targetId) {
+        const idx = (qData.questions ?? []).findIndex((q: Question) => q.id === targetId);
+        if (idx !== -1) { setIndex(idx); setView('practice'); }
+      }
       const ids = (bData.bookmarks ?? []).map((b: { question_id: string }) => b.question_id);
       setBookmarks(new Set(ids));
       const sMap: Record<string, QuestionStats> = {};

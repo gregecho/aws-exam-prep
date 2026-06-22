@@ -32,7 +32,7 @@ export default async function ExamResultsPage({ params }: Props) {
 
   const { data: questions } = await supabase
     .from('questions')
-    .select('id, correct, domain, question')
+    .select('id, correct, domain, question_number, question')
     .in('id', questionIds);
 
   const statsMap: Record<string, { total: number; correct: number }> = {};
@@ -57,11 +57,11 @@ export default async function ExamResultsPage({ params }: Props) {
     practicedCount: 0,
   }));
 
-  const incorrectByDomain: Record<string, { id: string; question: string }[]> = {};
+  const incorrectByDomain: Record<string, { id: string; question_number: number | null }[]> = {};
   for (const q of questions ?? []) {
     if (answers[q.id] && !isAnswerCorrect(answers[q.id], q.correct)) {
       if (!incorrectByDomain[q.domain]) incorrectByDomain[q.domain] = [];
-      incorrectByDomain[q.domain].push({ id: q.id, question: q.question });
+      incorrectByDomain[q.domain].push({ id: q.id, question_number: q.question_number });
     }
   }
   const incorrectDomains = DOMAINS.filter((d) => incorrectByDomain[d]?.length > 0);
@@ -108,15 +108,25 @@ export default async function ExamResultsPage({ params }: Props) {
                   <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--accent-red)' }}>
                     {domain}
                   </p>
-                  {incorrectByDomain[domain].map((q) => (
-                    <div
-                      key={q.id}
-                      className="py-2.5 px-3 rounded-lg text-sm"
-                      style={{ background: 'var(--bg-option)', color: 'var(--text-secondary)' }}
-                    >
-                      {q.question}
-                    </div>
-                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {incorrectByDomain[domain]
+                      .sort((a, b) => (a.question_number ?? 0) - (b.question_number ?? 0))
+                      .map((q) => (
+                        <Link
+                          key={q.id}
+                          href={`/practice/${encodeURIComponent(domain)}?q=${q.id}`}
+                          className="text-xs font-semibold px-2.5 py-1 rounded-md transition-opacity hover:opacity-80"
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            background: 'rgba(14,165,233,0.12)',
+                            color: 'var(--accent-teal)',
+                            border: '1px solid rgba(14,165,233,0.3)',
+                          }}
+                        >
+                          Q{q.question_number}
+                        </Link>
+                      ))}
+                  </div>
                 </div>
               ))}
             </div>
