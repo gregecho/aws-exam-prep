@@ -32,7 +32,7 @@ export default async function ExamResultsPage({ params }: Props) {
 
   const { data: questions } = await supabase
     .from('questions')
-    .select('id, correct, domain, question_number, question')
+    .select('id, correct, domain, question')
     .in('id', questionIds);
 
   const statsMap: Record<string, { total: number; correct: number }> = {};
@@ -57,9 +57,14 @@ export default async function ExamResultsPage({ params }: Props) {
     practicedCount: 0,
   }));
 
-  const incorrectQuestions = (questions ?? [])
-    .filter((q) => answers[q.id] && !isAnswerCorrect(answers[q.id], q.correct))
-    .sort((a, b) => (a.question_number ?? 0) - (b.question_number ?? 0));
+  const incorrectByDomain: Record<string, { id: string; question: string }[]> = {};
+  for (const q of questions ?? []) {
+    if (answers[q.id] && !isAnswerCorrect(answers[q.id], q.correct)) {
+      if (!incorrectByDomain[q.domain]) incorrectByDomain[q.domain] = [];
+      incorrectByDomain[q.domain].push({ id: q.id, question: q.question });
+    }
+  }
+  const incorrectDomains = DOMAINS.filter((d) => incorrectByDomain[d]?.length > 0);
 
   return (
     <div className="flex flex-col flex-1">
@@ -86,33 +91,32 @@ export default async function ExamResultsPage({ params }: Props) {
           </Link>
         </div>
 
-        {incorrectQuestions.length > 0 && (
+        {incorrectDomains.length > 0 && (
           <div
-            className="rounded-xl p-6 space-y-4"
+            className="rounded-xl p-6 space-y-5"
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
           >
             <h2
               className="text-sm font-semibold uppercase tracking-widest"
               style={{ color: 'var(--text-muted)' }}
             >
-              Incorrect ({incorrectQuestions.length})
+              Incorrect ({incorrectDomains.reduce((n, d) => n + incorrectByDomain[d].length, 0)})
             </h2>
-            <div className="space-y-2">
-              {incorrectQuestions.map((q) => (
-                <div
-                  key={q.id}
-                  className="flex gap-3 py-2.5 px-3 rounded-lg"
-                  style={{ background: 'var(--bg-option)' }}
-                >
-                  <span
-                    className="shrink-0 text-xs mt-0.5"
-                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
-                  >
-                    Q{q.question_number}
-                  </span>
-                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    {q.question}
-                  </span>
+            <div className="space-y-5">
+              {incorrectDomains.map((domain) => (
+                <div key={domain} className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--accent-red)' }}>
+                    {domain}
+                  </p>
+                  {incorrectByDomain[domain].map((q) => (
+                    <div
+                      key={q.id}
+                      className="py-2.5 px-3 rounded-lg text-sm"
+                      style={{ background: 'var(--bg-option)', color: 'var(--text-secondary)' }}
+                    >
+                      {q.question}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
