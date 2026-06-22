@@ -30,12 +30,20 @@ export default function DomainProgressBar({ stats }: DomainProgressBarProps) {
             {stats.domain}
           </span>
         </div>
-        <span
-          className="text-xs shrink-0"
-          style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
-        >
-          {stats.practicedCount}/{stats.bankCount} practiced
-        </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <span
+            className="text-sm font-semibold"
+            style={{ fontFamily: 'var(--font-mono)', color: barColor }}
+          >
+            {stats.total > 0 ? `${pct}%` : '—'}
+          </span>
+          <span
+            className="text-xs"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}
+          >
+            {stats.practicedCount}/{stats.bankCount} practiced
+          </span>
+        </div>
       </div>
       <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
         <div
